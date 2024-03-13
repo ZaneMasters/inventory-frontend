@@ -5,6 +5,7 @@ import { ProductService } from '../../shared/services/product.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { NewProductComponent } from '../new-product/new-product.component';
+import { ConfirmComponent } from '../../shared/components/confirm/confirm.component';
 
 @Component({
   selector: 'app-product',
@@ -43,7 +44,8 @@ export class ProductComponent implements OnInit {
       let listCproduct = resp.product.products;
 
       listCproduct.forEach((element: ProductElement) => {
-        element.category = element.category.name;
+        //element.category = element.category.name;
+
         element.picture = 'data:image/jpeg;base64,'+element.picture;
         dateProduct.push(element);
       });
@@ -73,6 +75,54 @@ export class ProductComponent implements OnInit {
     return this.snackBar.open(message,action,{
       duration: 2000
     })
+  }
+
+  edit(id:number, name:string, price:number, account:number, category:any){
+
+    const dialogRef = this.dialog.open(NewProductComponent , {
+      width: '500px',
+      data: {
+        id:id, name:name, price:price, account:account , category:category
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result:any) => {
+      if (result ==1){
+        this.openSnackBar("Producto Editado", "Exitosa");
+        this.getProducts();
+      }else if(result ==2){
+        this.openSnackBar("Se produjo un error al editar producto", "Error");
+      }
+    });
+  }
+
+  delete(id:any){
+    const dialogRef = this.dialog.open(ConfirmComponent , {
+      width: '500px',
+      data: {
+        id:id, module: "product"
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result:any) => {
+      if (result ==1){
+        this.openSnackBar("Producto Eliminado", "Exitosa");
+        this.getProducts();
+      }else if(result ==2){
+        this.openSnackBar("Se produjo un error al eliminar producto", "Error");
+      }
+    });
+  }
+
+  buscar(name:any){
+    if(name.length === 0){
+      return this.getProducts();
+    }
+
+    this.productService.getProductByName(name)
+        .subscribe((resp:any) => {
+          this.processProductResponse(resp);
+        })
   }
 
 
